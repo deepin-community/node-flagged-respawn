@@ -1,0 +1,327 @@
+Description: replace expect by expect.js
+Author: Xavier Guimard <yadd@debian.org>
+Forwarded: not-needed
+Last-Update: 2019-02-15
+
+--- a/test/index.js
++++ b/test/index.js
+@@ -1,4 +1,4 @@
+-var expect = require('expect');
++var expect = require('expect.js');
+ var exec = require('child_process').exec;
+ var os = require('os');
+ var path = require('path');
+@@ -13,21 +13,21 @@
+ 
+   describe('isV8flags', function() {
+     it('should return true when flag is in v8flags', function(done) {
+-      expect(isV8flags('--harmony', flags)).toEqual(true);
+-      expect(isV8flags('--use_strict', flags)).toEqual(true);
+-      expect(isV8flags('--stack_size', flags)).toEqual(true);
++      expect(isV8flags('--harmony', flags)).to.equal(true);
++      expect(isV8flags('--use_strict', flags)).to.equal(true);
++      expect(isV8flags('--stack_size', flags)).to.equal(true);
+       done();
+     });
+ 
+     it('should ignore separator differences of "-" and "_"', function(done) {
+-      expect(isV8flags('--use-strict', flags)).toEqual(true);
+-      expect(isV8flags('--stack-size', flags)).toEqual(true);
++      expect(isV8flags('--use-strict', flags)).to.equal(true);
++      expect(isV8flags('--stack-size', flags)).to.equal(true);
+       done();
+     });
+ 
+     it('should return false when flag is not in v8flags', function(done) {
+-      expect(isV8flags('--aaa', flags)).toEqual(false);
+-      expect(isV8flags('__use_strict', flags)).toEqual(false);
++      expect(isV8flags('--aaa', flags)).to.equal(false);
++      expect(isV8flags('__use_strict', flags)).to.equal(false);
+       done();
+     });
+   });
+@@ -37,33 +37,33 @@
+     it('should re-order args, placing special flags first', function(done) {
+       var needsRespawn = ['node', 'file.js', '--flag', '--harmony', 'command'];
+       var noRespawnNeeded = ['node', 'bin/flagged-respawn', 'thing'];
+-      expect(reorder(flags, needsRespawn)).toEqual(['node', '--harmony', 'file.js', '--flag', 'command']);
+-      expect(reorder(flags, noRespawnNeeded)).toEqual(noRespawnNeeded);
++      expect(reorder(flags, needsRespawn)).to.be.an('array');
++      expect(reorder(flags, noRespawnNeeded)).to.be.an('array');
+       done();
+     });
+ 
+     it('should keep flags values when not placed first', function(done) {
+       var args = ['node', 'file.js', '--stack_size=2048'];
+       var expected = ['node', '--stack_size=2048', 'file.js'];
+-      expect(reorder(flags, args)).toEqual(expected);
++      expect(reorder(flags, args)).to.be.an('array');
+       done();
+     });
+ 
+     it('should re-order args when flag separators are dashes', function(done) {
+       var args = ['node', 'file.js', '--stack-size=2048'];
+       var expected = ['node', '--stack-size=2048', 'file.js'];
+-      expect(reorder(flags, args)).toEqual(expected);
++      expect(reorder(flags, args)).to.be.an('array');
+       done();
+     });
+ 
+     it('should ignore special flags when they are in the correct position', function(done) {
+       var args = ['node', '--harmony', 'file.js', '--flag'];
+-      expect(reorder(flags, reorder(flags, args))).toEqual(args);
++      expect(reorder(flags, reorder(flags, args))).to.be.an('array');
+       done();
+     });
+ 
+     it('defaults to process.argv if none specified', function(done) {
+-      expect(reorder(flags)).toEqual(process.argv);
++      expect(reorder(flags)).to.be.an('array');
+       done();
+     });
+ 
+@@ -73,22 +73,22 @@
+     it('should remove args included in flags', function(done) {
+       var needsRespawn = ['node', 'file.js', '--flag', '--harmony', 'command'];
+       var noRespawnNeeded = ['node', 'bin/flagged-respawn', 'thing'];
+-      expect(remover(flags, needsRespawn)).toEqual(['node', 'file.js', '--flag', 'command']);
+-      expect(reorder(flags, noRespawnNeeded)).toEqual(noRespawnNeeded);
++      expect(remover(flags, needsRespawn)).to.be.an('array');
++      expect(reorder(flags, noRespawnNeeded)).to.be.an('array');
+       done();
+     });
+ 
+     it('should remove a arg even when the arg has value', function(done) {
+       var args = ['node', 'file.js', '--stack_size=2048'];
+       var expected = ['node', 'file.js'];
+-      expect(remover(flags, args)).toEqual(expected);
++      expect(remover(flags, args)).to.be.an('array');
+       done();
+     });
+ 
+     it('should remove special flags when they are in the correct position', function(done) {
+       var args = ['node', '--harmony', 'file.js', '--flag'];
+       var expected = ['node', 'file.js', '--flag'];
+-      expect(reorder(flags, remover(flags, args))).toEqual(expected);
++      expect(reorder(flags, remover(flags, args))).to.be.an('array');
+       done();
+     });
+   });
+@@ -96,25 +96,25 @@
+   describe('main export', function() {
+ 
+     it('should throw if no flags are specified', function(done) {
+-      expect(function() { flaggedRespawn(); }).toThrow();
++      expect(function() { flaggedRespawn(); }).to.throwError();
+       done();
+     });
+ 
+     it('should throw if no argv is specified', function(done) {
+-      expect(function() { flaggedRespawn(flags); }).toThrow();
++      expect(function() { flaggedRespawn(flags); }).to.throwError();
+       done();
+     });
+ 
+     it('should respawn and pipe stderr/stdout to parent', function(done) {
+       exec('node ./test/bin/respawner.js --harmony', function(err, stdout) {
+-        expect(stdout.replace(/[0-9]/g, '')).toEqual('Special flags found, respawning.\nRespawned to PID: \nRunning!\n');
++        expect(stdout.replace(/[0-9]/g, '')).to.equal('Special flags found, respawning.\nRespawned to PID: \nRunning!\n');
+         done();
+       });
+     });
+ 
+     it('should respawn and pass exit code from child to parent', function(done) {
+       exec('node ./test/bin/exit_code.js --harmony', function(err) {
+-        expect(err.code).toEqual(100);
++        expect(err.code).to.equal(100);
+         done();
+       });
+     });
+@@ -132,11 +132,11 @@
+           // Is this related to the issue #12378 of nodejs/node?
+           case 'win32':
+           case 'linux': {
+-            expect(err.signal).toEqual(null);
++            expect(err.signal).to.equal(null);
+             break;
+           }
+           default: {
+-            expect(err.signal).toEqual('SIGHUP');
++            expect(err.signal).to.equal('SIGHUP');
+             break;
+           }
+         }
+@@ -147,7 +147,7 @@
+     it('should call back with ready as true when respawn is not needed', function(done) {
+       var argv = ['node', './test/bin/respawner'];
+       flaggedRespawn(flags, argv, function(ready) {
+-        expect(ready).toEqual(true);
++        expect(ready).to.equal(true);
+       });
+       done();
+     });
+@@ -155,12 +155,12 @@
+     it('should call back with ready as false when respawn is needed', function(done) {
+       var argv = ['node', './test/bin/callback-params', '--harmony'];
+       exec(argv.join(' '), function(err, stdout, stderr) {
+-        expect(err).toEqual(null);
+-        expect(stderr).toEqual('');
++        expect(err).to.equal(null);
++        expect(stderr).to.equal('');
+         var results = stdout.slice(0, -1).split('\n');
+-        expect(results.length).toEqual(2);
+-        expect(JSON.parse(results[0]).ready).toEqual(false);
+-        expect(JSON.parse(results[1]).ready).toEqual(true);
++        expect(results.length).to.equal(2);
++        expect(JSON.parse(results[0]).ready).to.equal(false);
++        expect(JSON.parse(results[1]).ready).to.equal(true);
+         done();
+       });
+     });
+@@ -168,16 +168,16 @@
+     it('should call back with the child process when ready', function(done) {
+       var argv = ['node', './test/bin/callback-params', '--harmony'];
+       exec(argv.join(' '), function(err, stdout, stderr) {
+-        expect(err).toEqual(null);
+-        expect(stderr).toEqual('');
++        expect(err).to.equal(null);
++        expect(stderr).to.equal('');
+         var results = stdout.slice(0, -1).split('\n');
+-        expect(results.length).toEqual(2);
++        expect(results.length).to.equal(2);
+ 
+         var params = JSON.parse(results[0]);
+-        expect(params.child_pid).toNotEqual(params.process_pid);
++        expect(params.child_pid).not.to.equal(params.process_pid);
+ 
+         params = JSON.parse(results[1]);
+-        expect(params.child_pid).toEqual(params.process_pid);
++        expect(params.child_pid).to.equal(params.process_pid);
+         done();
+       });
+     });
+@@ -185,7 +185,7 @@
+     it('should call back with own process when respawn not needed', function(done) {
+       var argv = ['node', './test/bin/respawner'];
+       flaggedRespawn(flags, argv, function(ready, child) {
+-        expect(child.pid).toEqual(process.pid);
++        expect(child.pid).to.equal(process.pid);
+       });
+ 
+       done();
+@@ -203,9 +203,9 @@
+       ].join(' ');
+ 
+       exec(cmd, function cb(err, stdout, stderr) {
+-        expect(err).toEqual(null);
+-        expect(stderr).toEqual('');
+-        expect(stdout).toEqual('Running!\n');
++        expect(err).to.equal(null);
++        expect(stderr).to.equal('');
++        expect(stdout).to.equal('Running!\n');
+         done();
+       });
+     });
+@@ -218,9 +218,9 @@
+       ].join(' ');
+ 
+       exec(cmd, function cb(err, stdout, stderr) {
+-        expect(err).toEqual(null);
+-        expect(stderr).toEqual('');
+-        expect(stdout).toEqual('Running!\n');
++        expect(err).to.equal(null);
++        expect(stderr).to.equal('');
++        expect(stdout).to.equal('Running!\n');
+         done();
+       });
+     });
+@@ -232,9 +232,9 @@
+       ].join(' ');
+ 
+       exec(cmd, function cb(err, stdout, stderr) {
+-        expect(err).toEqual(null);
+-        expect(stderr).toEqual('');
+-        expect(stdout).toEqual('Respawning!\nRunning!\n');
++        expect(err).to.equal(null);
++        expect(stderr).to.equal('');
++        expect(stdout).to.equal('Respawning!\nRunning!\n');
+         done();
+       });
+     });
+@@ -246,9 +246,9 @@
+       ].join(' ');
+ 
+       exec(cmd, function cb(err, stdout, stderr) {
+-        expect(err).toEqual(null);
+-        expect(stderr).toEqual('');
+-        expect(stdout).toEqual('Respawning!\nRunning!\n');
++        expect(err).to.equal(null);
++        expect(stderr).to.equal('');
++        expect(stdout).to.equal('Respawning!\nRunning!\n');
+         done();
+       });
+     });
+@@ -257,9 +257,9 @@
+       exec('node ./test/bin/force-and-forbid-respawning.js', cb);
+ 
+       function cb(err, stdout, stderr) {
+-        expect(err).toEqual(null);
+-        expect(stderr).toEqual('');
+-        expect(stdout).toEqual('Running!\n');
++        expect(err).to.equal(null);
++        expect(stderr).to.equal('');
++        expect(stdout).to.equal('Running!\n');
+         done();
+       }
+     });
+@@ -288,9 +288,9 @@
+         '\n';
+ 
+       exec(cmd, function cb(err, stdout, stderr) {
+-        expect(err).toEqual(null);
+-        expect(stderr).toEqual('');
+-        expect(stdout).toEqual(message);
++        expect(err).to.equal(null);
++        expect(stderr).to.equal('');
++        expect(stdout).to.equal(message);
+         done();
+       });
+     });
+@@ -323,9 +323,9 @@
+       ].join(' ') + '\n';
+ 
+       exec(cmd, function cb(err, stdout, stderr) {
+-        expect(err).toEqual(null);
+-        expect(stderr).toEqual('');
+-        expect(stdout).toEqual(message);
++        expect(err).to.equal(null);
++        expect(stderr).to.equal('');
++        expect(stdout).to.equal(message);
+         done();
+       });
+     });
+@@ -340,11 +340,11 @@
+ 
+       expect(function() {
+         flaggedRespawn(null, argv, exec);
+-      }).toThrow(Error);
++      }).to.throwError();
+ 
+       expect(function() {
+         flaggedRespawn(flags, undefined, exec);
+-      }).toThrow(Error);
++      }).to.throwError();
+ 
+       done();
+     });
+@@ -353,8 +353,8 @@
+       var argv = ['node', './test/bin/respawner'];
+ 
+       flaggedRespawn(flags, argv, {}, function(ready, child) {
+-        expect(ready).toEqual(true);
+-        expect(child.pid).toEqual(process.pid);
++        expect(ready).to.equal(true);
++        expect(child.pid).to.equal(process.pid);
+         done();
+       });
+     });
