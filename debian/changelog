@@ -1,3 +1,13 @@
+node-flagged-respawn (1.0.1-5) unstable; urgency=medium
+
+  [ Debian Janitor ]
+  * Set upstream metadata fields: Bug-Database, Bug-Submit, Repository,
+    Repository-Browse.
+  * Update standards version to 4.6.1, no changes needed.
+  * Apply multi-arch hints. + node-flagged-respawn: Add :any qualifier for nodejs dependency.
+
+ -- Jelmer Vernooĳ <jelmer@debian.org>  Mon, 21 Nov 2022 10:55:29 +0000
+
 node-flagged-respawn (1.0.1-4) unstable; urgency=medium
 
   [ Debian Janitor ]
